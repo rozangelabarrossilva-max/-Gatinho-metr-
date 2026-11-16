@@ -1,0 +1,162 @@
+{
+  "entities": {
+    "PlayerProfile": {
+      "title": "PlayerProfile",
+      "description": "Persistent player progression, high score, coin wallet, kitty skins, power-up levels, and active mission progress for Gatinho Metrô.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the player."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name shown in profile and scoreboard."
+        },
+        "highScore": {
+          "type": "integer",
+          "description": "Highest run score achieved."
+        },
+        "totalCoins": {
+          "type": "integer",
+          "description": "Available coins for unlocking kitty skins and upgrading power-ups."
+        },
+        "totalRuns": {
+          "type": "integer",
+          "description": "Total completed runs."
+        },
+        "scoreMultiplier": {
+          "type": "integer",
+          "description": "Current score multiplier unlocked via mission tiers."
+        },
+        "selectedSkin": {
+          "type": "string",
+          "enum": ["ginger", "siamese", "neon", "gold"],
+          "description": "Currently equipped 3D kitty skin."
+        },
+        "unlockedSkins": {
+          "type": "array",
+          "description": "List of unlocked kitty skin identifiers."
+        },
+        "magnetLevel": {
+          "type": "integer",
+          "description": "Upgrade level (1-5) for the coin magnet duration."
+        },
+        "jetpackLevel": {
+          "type": "integer",
+          "description": "Upgrade level (1-5) for the jetpack flying power-up duration."
+        },
+        "missionTier": {
+          "type": "integer",
+          "description": "Current mission set tier."
+        },
+        "missionCoinsWithMagnet": {
+          "type": "integer",
+          "description": "Cumulative coins collected while magnet is active in current mission tier."
+        },
+        "missionJetpackFlights": {
+          "type": "integer",
+          "description": "Cumulative jetpack flights activated in current mission tier."
+        },
+        "missionTotalMeters": {
+          "type": "integer",
+          "description": "Cumulative meters run in current mission tier."
+        },
+        "missionTrainsPassed": {
+          "type": "integer",
+          "description": "Cumulative trains dodged or surfed in current mission tier."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of profile creation (clients must submit FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last profile update (clients must submit FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "highScore",
+        "totalCoins",
+        "totalRuns",
+        "scoreMultiplier",
+        "selectedSkin",
+        "unlockedSkins",
+        "magnetLevel",
+        "jetpackLevel",
+        "missionTier",
+        "missionCoinsWithMagnet",
+        "missionJetpackFlights",
+        "missionTotalMeters",
+        "missionTrainsPassed",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "RunRecord": {
+      "title": "RunRecord",
+      "description": "Immutable record of an individual subway run with score, coins, distance, magnet coins, and jetpack flight distance.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the player."
+        },
+        "score": {
+          "type": "integer",
+          "description": "Final run score."
+        },
+        "coinsCollected": {
+          "type": "integer",
+          "description": "Coins collected during this run."
+        },
+        "distanceMeters": {
+          "type": "integer",
+          "description": "Distance ran in meters."
+        },
+        "magnetCoins": {
+          "type": "integer",
+          "description": "Coins pulled using the magnet power-up in this run."
+        },
+        "jetpackMeters": {
+          "type": "integer",
+          "description": "Meters flown using the jetpack power-up in this run."
+        },
+        "skinId": {
+          "type": "string",
+          "enum": ["ginger", "siamese", "neon", "gold"],
+          "description": "Kitty skin used during the run."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of run completion (clients must submit FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "score",
+        "coinsCollected",
+        "distanceMeters",
+        "magnetCoins",
+        "jetpackMeters",
+        "skinId",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/PlayerProfile" },
+      "description": "Player profile, wallet, power-up upgrades, kitty skins, and mission progress."
+    },
+    "/users/{userId}/runs/{runId}": {
+      "schema": { "$ref": "#/entities/RunRecord" },
+      "description": "Per-user history of completed subway runs."
+    }
+  }
+}

@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Gatinho Metrô</string>
+    <string name="tagline">Corrida 3D nos trilhos com o gatinho</string>
+    <string name="sign_in_google">Entrar com Google</string>
+    <string name="sign_in_subtitle">Entre para salvar seu recorde, moedas, missões e gatinhos na nuvem.</string>
+    <string name="sign_out">Sair</string>
+    <string name="play_now">CORRER AGORA</string>
+    <string name="pause">Pausar</string>
+    <string name="resume">Continuar</string>
+    <string name="restart">Jogar de Novo</string>
+    <string name="back_to_menu">Menu Principal</string>
+    <string name="missions_title">Objetivos do Metrô</string>
+    <string name="shop_title">Loja &amp; Gatinhos</string>
+    <string name="history_title">Corridas Recentes</string>
+    <string name="magnet_label">ÍMÃ</string>
+    <string name="jetpack_label">VOANDO</string>
+    <string name="multiplier_label">2X PONTOS</string>
+    <string name="game_over_title">Fim da Corrida!</string>
+    <string name="new_record">NOVO RECORDE!</string>
+    <string name="swipe_hint">Deslize: Esquerda/Direita • Pular • Rolar</string>
+</resources>

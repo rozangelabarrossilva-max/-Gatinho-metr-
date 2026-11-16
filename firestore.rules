@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidSkin(skin) {
+      return skin is string && skin in ['ginger', 'siamese', 'neon', 'gold'];
+    }
+
+    function isValidPlayerProfile(data, userId) {
+      return data.userId is string &&
+             data.userId == request.auth.uid &&
+             data.userId == userId &&
+             data.displayName is string &&
+             data.displayName.size() >= 1 &&
+             data.displayName.size() <= 60 &&
+             data.highScore is int && data.highScore >= 0 &&
+             data.totalCoins is int && data.totalCoins >= 0 &&
+             data.totalRuns is int && data.totalRuns >= 0 &&
+             data.scoreMultiplier is int && data.scoreMultiplier >= 1 && data.scoreMultiplier <= 50 &&
+             isValidSkin(data.selectedSkin) &&
+             data.unlockedSkins is list &&
+             data.unlockedSkins.size() >= 1 &&
+             data.unlockedSkins.size() <= 10 &&
+             data.unlockedSkins[0] is string &&
+             data.magnetLevel is int && data.magnetLevel >= 1 && data.magnetLevel <= 5 &&
+             data.jetpackLevel is int && data.jetpackLevel >= 1 && data.jetpackLevel <= 5 &&
+             data.missionTier is int && data.missionTier >= 1 && data.missionTier <= 100 &&
+             data.missionCoinsWithMagnet is int && data.missionCoinsWithMagnet >= 0 &&
+             data.missionJetpackFlights is int && data.missionJetpackFlights >= 0 &&
+             data.missionTotalMeters is int && data.missionTotalMeters >= 0 &&
+             data.missionTrainsPassed is int && data.missionTrainsPassed >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidRunRecord(data, userId) {
+      return data.userId is string &&
+             data.userId == request.auth.uid &&
+             data.userId == userId &&
+             data.score is int && data.score >= 0 &&
+             data.coinsCollected is int && data.coinsCollected >= 0 &&
+             data.distanceMeters is int && data.distanceMeters >= 0 &&
+             data.magnetCoins is int && data.magnetCoins >= 0 &&
+             data.jetpackMeters is int && data.jetpackMeters >= 0 &&
+             isValidSkin(data.skinId) &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'displayName', 'highScore', 'totalCoins', 'totalRuns',
+                         'scoreMultiplier', 'selectedSkin', 'unlockedSkins',
+                         'magnetLevel', 'jetpackLevel', 'missionTier',
+                         'missionCoinsWithMagnet', 'missionJetpackFlights',
+                         'missionTotalMeters', 'missionTrainsPassed',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'displayName', 'highScore', 'totalCoins', 'totalRuns',
+                         'scoreMultiplier', 'selectedSkin', 'unlockedSkins',
+                         'magnetLevel', 'jetpackLevel', 'missionTier',
+                         'missionCoinsWithMagnet', 'missionJetpackFlights',
+                         'missionTotalMeters', 'missionTrainsPassed',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidPlayerProfile(incoming(), userId);
+
+      allow update: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(userId) &&
+                       isValidPlayerProfile(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'highScore', 'totalCoins', 'totalRuns',
+                         'scoreMultiplier', 'selectedSkin', 'unlockedSkins',
+                         'magnetLevel', 'jetpackLevel', 'missionTier',
+                         'missionCoinsWithMagnet', 'missionJetpackFlights',
+                         'missionTotalMeters', 'missionTrainsPassed',
+                         'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(userId);
+
+      match /runs/{runId} {
+        allow get: if isSignedIn() && request.auth.uid == userId && isValidId(runId);
+        allow list: if isSignedIn() && request.auth.uid == userId;
+
+        allow create: if isSignedIn() &&
+                         request.auth.uid == userId &&
+                         isValidId(userId) &&
+                         isValidId(runId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'score', 'coinsCollected', 'distanceMeters',
+                           'magnetCoins', 'jetpackMeters', 'skinId', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'score', 'coinsCollected', 'distanceMeters',
+                           'magnetCoins', 'jetpackMeters', 'skinId', 'createdAt'
+                         ]) &&
+                         isValidRunRecord(incoming(), userId);
+
+        allow update: if false;
+        allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(runId);
+      }
+    }
+  }
+}
